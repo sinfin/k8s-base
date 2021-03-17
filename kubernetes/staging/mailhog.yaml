@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailhog
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $CI_ENVIRONMENT_SLUG
+    space: $KUBE_NAMESPACE
+    service: mailhog-$CI_ENVIRONMENT_SLUG
+    track: stable
+spec:
+  selector:
+    matchLabels:
+      name: mailhog
+      app: $CI_ENVIRONMENT_SLUG
+      track: stable
+      service: mailhog-$CI_ENVIRONMENT_SLUG
+      space: $KUBE_NAMESPACE
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: mailhog-CI_ENVIRONMENT_SLUG
+        app: $CI_ENVIRONMENT_SLUG
+        service: mailhog-$CI_ENVIRONMENT_SLUG
+        track: stable
+        space: $KUBE_NAMESPACE
+    spec:
+      containers:
+        - name: mailhog-$CI_ENVIRONMENT_SLUG
+          image: mailhog/mailhog:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 8025
+            - containerPort: 1025
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailhog-$CI_ENVIRONMENT_SLUG
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $CI_ENVIRONMENT_SLUG
+    service: mailhog-$CI_ENVIRONMENT_SLUG
+spec:
+  ports:
+   - port: 8025
+     name: web-ui
+   - port: 1025
+     name: smtp
+  selector:
+    app: $CI_ENVIRONMENT_SLUG
+    service: mailhog-$CI_ENVIRONMENT_SLUG
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: mailhog-$CI_ENVIRONMENT_SLUG
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $CI_ENVIRONMENT_SLUG
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+spec:
+  rules:
+  - host: mail-$CI_ENVIRONMENT_HOSTNAME
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: mailhog
+          servicePort: 8025
+  tls:
+  - hosts:
+    - mail-$CI_ENVIRONMENT_HOSTNAME
+    secretName: mail-${CI_ENVIRONMENT_SLUG}-cert

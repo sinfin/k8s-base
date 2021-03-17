@@ -1,0 +1,168 @@
+# Default Image
+image: quay.io/lifechurch/k8s-deploy-helper:latest
+
+variables:
+  BINARY_NAME: $CI_PROJECT_NAME
+  KUBE_DOMAIN: k8s.sinfin.io
+
+stages:
+  - base
+  - test
+  - packages
+  - dockerbuild
+  - review
+  - staging
+  - production
+  - taglatest
+
+base:
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg RUBY_VERSION=2.6.6 -t ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG} -f Dockerfile.base .
+    - docker push ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG}
+  stage: base
+  interruptible: false
+  only:
+    refs:
+      - branches
+    changes:
+      - Dockerfile.base
+
+test:
+  image: $CI_REGISTRY_IMAGE/base:$CI_COMMIT_REF_SLUG
+  services:
+    - postgres:13-alpine
+    - redis:latest
+  variables:
+    POSTGRES_DB: project_test
+    POSTGRES_USER: project_test
+    POSTGRES_PASSWORD: project_test
+  cache:
+    key:
+      files:
+        - Gemfile.lock
+    paths:
+      - vendor
+  script:
+    - gem install bundler -v=2.1.4
+    - bundle config set without 'development' && bundle install
+    - ./prepare_test.sh
+    - RAILS_ENV=test bundle exec rake db:environment:set 2>/dev/null || echo 'Not setting env.'
+    - RAILS_ENV=test bundle exec rake db:schema:load
+    - RAILS_ENV=test bundle exec rake db:seed
+    - rm -f log/test.log
+    - PARALLEL_WORKERS=4 bundle exec rails test
+  stage: test
+  interruptible: true
+  only:
+    - branches
+
+packages:
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG} -f Dockerfile.packages .
+    - docker push ${CI_REGISTRY_IMAGE}/packages:${CI_COMMIT_REF_SLUG}
+  stage: packages
+  interruptible: false
+  only:
+    refs:
+      - branches
+    changes:
+      - Gemfile.lock
+
+docker_build:
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - cp .env.sample .env
+    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} -f Dockerfile .
+    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+  stage: dockerbuild
+  interruptible: true
+  only:
+    - branches
+
+review:
+  stage: review
+  dependencies: []
+  script:
+    - command deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
+    on_stop: stop_review
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+
+stop_review:
+  stage: review
+  dependencies: []
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - command destroy
+    - kubectl delete namespace "$KUBE_NAMESPACE"
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+
+staging:
+  stage: staging
+  dependencies: []
+  script:
+    - command deploy
+  environment:
+    name: staging
+    url: http://$CI_PROJECT_NAME-stage.$KUBE_DOMAIN
+    on_stop: stop_staging
+  when: manual
+  only:
+    - master
+
+stop_staging:
+  stage: staging
+  dependencies: []
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - command destroy
+    - kubectl delete namespace "$KUBE_NAMESPACE"
+  environment:
+    name: staging
+    action: stop
+  when: manual
+  only:
+    - master
+
+production:
+  stage: production
+  dependencies: []
+  script:
+    - command deploy
+  environment:
+    name: production
+    url: http://$CI_PROJECT_NAME-prod.$KUBE_DOMAIN
+  when: manual
+  allow_failure: false
+  only:
+    - master
+
+taglatest:
+  stage: taglatest
+  dependencies: []
+  allow_failure: false
+  script:
+    - command push
+  only:
+    - master
+

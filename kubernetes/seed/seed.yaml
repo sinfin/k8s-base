@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-$CI_ENVIRONMENT_SLUG
+  namespace: $KUBE_NAMESPACE
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      containers:
+      - name: seed-$CI_ENVIRONMENT_SLUG
+        image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+        envFrom:
+          - configMapRef:
+              name: ${CI_PROJECT_NAME}-config
+        env:
+          - name: PROCESS
+            value: "db:seed:sleep"
+          {{SECRETS}}
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: gitlab-registry

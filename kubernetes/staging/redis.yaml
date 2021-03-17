@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $CI_ENVIRONMENT_SLUG
+    space: $KUBE_NAMESPACE
+    track: stable
+spec:
+  selector:
+    matchLabels:
+      name: redis
+      app: $CI_ENVIRONMENT_SLUG
+      service: redis-$CI_ENVIRONMENT_SLUG
+      track: stable
+      space: $KUBE_NAMESPACE
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: redis-$CI_ENVIRONMENT_SLUG
+        app: $CI_ENVIRONMENT_SLUG
+        service: redis-$CI_ENVIRONMENT_SLUG
+        track: stable
+        space: $KUBE_NAMESPACE
+    spec:
+      containers:
+        - name: redis-$CI_ENVIRONMENT_SLUG
+          image: redis:latest
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: $KUBE_NAMESPACE
+  labels:
+    app: $CI_ENVIRONMENT_SLUG
+spec:
+  ports:
+   - port: 6379
+  selector:
+    app: $CI_ENVIRONMENT_SLUG
+    service: redis-$CI_ENVIRONMENT_SLUG

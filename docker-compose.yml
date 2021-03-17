@@ -1,0 +1,50 @@
+version: "3"
+services:
+  backend:
+    image: registry.gitlab.com/sinfin1/change-me:latest
+    build:
+      context: .
+    environment:
+      PROCESS: server:puma
+      RAILS_ENV: production
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+  sidekiq:
+    image: registry.gitlab.com/sinfin1/change-me:latest
+    build:
+      context: .
+    environment:
+      PROCESS: server:sidekiq
+      RAILS_ENV: production
+    env_file:
+      - .env
+  static:
+    image: registry.gitlab.com/sinfin1/change-me:latest
+    build:
+      context: .
+    environment:
+      PROCESS: server:nginx
+    ports:
+      - 8080:80
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - docker/nginx.proxy.conf:/etc/nginx/conf.d/default.conf
+  redis:
+    image: redis:latest
+    volumes:
+      - ./data/redis:/data
+    restart: always
+  postgresql:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: change-me
+      POSTGRES_PASSWORD: change-meSecretPass
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    restart: always

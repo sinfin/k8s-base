@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+data:
+  auth: change-me-base64
+kind: Secret
+metadata:
+  name: basic-auth
+  namespace: $KUBE_NAMESPACE
+type: Opaque
+---
+apiVersion: v1
+data:
+  RACK_ENV: 'production'
+  RAILS_ENV: 'production'
+  PROJECT_NAME: 'change-me'
+  SECRET_KEY_BASE: 'change-me'
+  DRAGONFLY_SECRET: 'change-me'
+  S3_SCHEME: 'https'
+  S3_REGION: 'eu-west-1'
+  S3_BUCKET_NAME: 'change-me'
+  AWS_ACCESS_KEY_ID: 'change-me' 
+  AWS_SECRET_ACCESS_KEY: 'change-me'
+  SMTP_ADDRESS: 'mailhog'
+  SMTP_PORT: '1025'
+  SMTP_DOMAIN: 'www.change-me.com'
+  SMTP_USERNAME: 'change-me'
+  SMTP_PASSWORD: 'change-me'
+  REDIS_URL: 'redis://redis:6379/0'
+  REDIS_NAMESPACE: 'change-me'
+  DB_HOST: 'postgres'
+  DB_NAME: '${CI_PROJECT_NAME}'
+  DB_USER: 'postgres'
+  DB_PASSWORD: '${CI_PROJECT_NAME}SecretPass'
+  DB_POOL: '10'
+  DB_PORT: '5432'
+  RAVEN_DSN: 'https://secret@change-me.sentry.io/change-me'
+  RECAPTCHA_SITE_KEY: 'change-me'
+  RECAPTCHA_SECRET_KEY: 'change-me'
+  FACEBOOK_APPLICATION_ID: 'change-me'
+  FACEBOOK_APPLICATION_SECRET: 'change-me'
+kind: ConfigMap
+metadata:
+  name: ${CI_PROJECT_NAME}-config
+  namespace: $KUBE_NAMESPACE
