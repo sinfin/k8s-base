@@ -22,7 +22,7 @@ spec:
                 memory: "512Mi"
             envFrom:
               - configMapRef:
-                name: ${CI_PROJECT_NAME}-config
+                  name: ${CI_PROJECT_NAME}-config
             env:
               - name: PROCESS
                 value: "app:cron"
