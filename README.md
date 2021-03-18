@@ -33,4 +33,5 @@ curl https://raw.githubusercontent.com/sinfin/k8s-base/master/dockerize.sh | bas
 2. update `config.yaml` files for staging and review
 3. update `backend.yml` and `sidekiq.yml` container limits in all `kubernetes/*` environments
 4. update `Gemfile` for dependencies like `redis-namespace`, `status-page`, ...
-5. review and merge PR
+5. remove capistrano from project
+6. review and merge PR
