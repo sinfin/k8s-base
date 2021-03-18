@@ -6,6 +6,7 @@ tar xvzf k8s-base.tar.gz && \
 	mv sinfin-k8s-base*/* sinfin-k8s-base*/.gitlab-ci.yml . && \
 	rmdir sinfin-k8s-base*
 git checkout -b dockerize
+git checkout README.md
 git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
 git commit -m "Dockerize application"
 git push -u origin dockerize
