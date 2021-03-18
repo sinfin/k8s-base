@@ -20,7 +20,7 @@ curl https://raw.githubusercontent.com/sinfin/k8s-base/master/dockerize.sh | bas
     * `Dockerfile.base` - ruby + system packages
     * `Dockerfile.packages` - base + Gemfile packages
     * `Dockerfile` - packages + application
-2. k8s configuration
+2. k8s configuration in `kubernetes/<env>/*`
    * review - adhoc environment for MR/PR reviews (manual action), contains redis and database
    * staging - stable staging environement before production deployment (manual action), contains redis and database
    * production - production deployment
