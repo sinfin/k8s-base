@@ -50,7 +50,6 @@ test:
     - ./prepare_test.sh
     - RAILS_ENV=test bundle exec rake db:environment:set 2>/dev/null || echo 'Not setting env.'
     - RAILS_ENV=test bundle exec rake db:schema:load
-    - RAILS_ENV=test bundle exec rake db:seed
     - rm -f log/test.log
     - PARALLEL_WORKERS=4 bundle exec rails test
   stage: test
