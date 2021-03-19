@@ -11,7 +11,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: redis
+      name: redis-$CI_ENVIRONMENT_SLUG
       app: $CI_ENVIRONMENT_SLUG
       service: redis-$CI_ENVIRONMENT_SLUG
       track: stable
