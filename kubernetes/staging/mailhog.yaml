@@ -12,7 +12,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: mailhog
+      name: mailhog-$CI_ENVIRONMENT_SLUG
       app: $CI_ENVIRONMENT_SLUG
       track: stable
       service: mailhog-$CI_ENVIRONMENT_SLUG
@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       labels:
-        name: mailhog-CI_ENVIRONMENT_SLUG
+        name: mailhog-$CI_ENVIRONMENT_SLUG
         app: $CI_ENVIRONMENT_SLUG
         service: mailhog-$CI_ENVIRONMENT_SLUG
         track: stable
