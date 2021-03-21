@@ -1,5 +1,10 @@
 # Dockerize application
 
+## Prerequisites
+
+* prepared `.env.sample` for tests
+* configuration via environment variables (all stages)
+
 ## Usage
 
 ```
@@ -35,3 +40,4 @@ curl https://raw.githubusercontent.com/sinfin/k8s-base/master/dockerize.sh | bas
 4. update `Gemfile` for dependencies like `redis-namespace`, `status-page`, ...
 5. remove capistrano from project
 6. review and merge PR
+7. run seed on each environment manualy
