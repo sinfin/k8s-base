@@ -28,6 +28,10 @@ case $PROCESS in
       sleep 180 && \
       bundle exec rake db:seed
   ;;
+  app:cron)
+      cd /app/ && \
+      bundle exec rake $CRON_TASK
+  ;;
   server:sidekiq)
       cd /app/ && \
         bundle exec sidekiq -C /app/config/sidekiq.yml -P /app/tmp/pids/sidekiq.pid

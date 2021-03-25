@@ -19,25 +19,25 @@ base:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg RUBY_VERSION=2.6.6 -t ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG} -f Dockerfile.base .
-    - docker push ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG}
+    - ./scripts/build_docker.sh base
   stage: base
   interruptible: false
   only:
     refs:
       - branches
     changes:
+      - scripts/build_docker.sh
       - Dockerfile.base
 
 test:
-  image: $CI_REGISTRY_IMAGE/base:$CI_COMMIT_REF_SLUG
+  image: $CI_REGISTRY_IMAGE/base:latest
   services:
     - postgres:13-alpine
     - redis:latest
   variables:
-    POSTGRES_DB: project_test
-    POSTGRES_USER: project_test
-    POSTGRES_PASSWORD: project_test
+    POSTGRES_DB: notesvilla_test
+    POSTGRES_USER: notesvilla_test
+    POSTGRES_PASSWORD: notesvilla_test
   cache:
     key:
       files:
@@ -45,15 +45,19 @@ test:
     paths:
       - vendor
   script:
+    - echo "danger" > $CI_PROJECT_DIR/success
     - gem install bundler -v=2.1.4
-    - bundle config set without 'development' && bundle install
-    - ./prepare_test.sh
+    - bundle config set without 'development' && bundle config set path 'vendor/ruby' && bundle install
+    - ./scripts/prepare_test.sh
     - RAILS_ENV=test bundle exec rake db:environment:set 2>/dev/null || echo 'Not setting env.'
-    - RAILS_ENV=test bundle exec rake db:schema:load
+    - RAILS_ENV=test bundle exec rake db:migrate
     - rm -f log/test.log
     - PARALLEL_WORKERS=4 bundle exec rails test
+    - echo "good" > $CI_PROJECT_DIR/success
   stage: test
   interruptible: true
+  after_script:
+    - ./scripts/webhook.sh "$(cat $CI_PROJECT_DIR/success)"
   only:
     - branches
 
@@ -61,14 +65,16 @@ packages:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}/base:${CI_COMMIT_REF_SLUG} -f Dockerfile.packages .
-    - docker push ${CI_REGISTRY_IMAGE}/packages:${CI_COMMIT_REF_SLUG}
+    - ./scripts/build_docker.sh packages
   stage: packages
   interruptible: false
   only:
     refs:
       - branches
     changes:
+      - scripts/build_docker.sh
+      - Dockerfile.base
+      - Dockerfile.packages
       - Gemfile.lock
 
 docker_build:
@@ -76,8 +82,7 @@ docker_build:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - cp .env.sample .env
-    - docker build --pull --build-arg BASE=$CI_COMMIT_REF_SLUG --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} -f Dockerfile .
-    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+    - ./scripts/build_docker.sh app
   stage: dockerbuild
   interruptible: true
   only:
