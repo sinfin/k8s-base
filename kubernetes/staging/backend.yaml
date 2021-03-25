@@ -86,3 +86,5 @@ spec:
           {{SECRETS}}
       imagePullSecrets:
         - name: gitlab-registry
+      nodeSelector:
+        doks.digitalocean.com/node-pool: shared-dev-pool

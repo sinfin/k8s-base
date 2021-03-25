@@ -13,13 +13,6 @@ spec:
           - name: cron-$CI_ENVIRONMENT_SLUG
             image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
             imagePullPolicy: "IfNotPresent"
-            resources:
-              requests:
-                memory: "256Mi"
-                cpu: "50m"
-              limits:
-                cpu: "100m"
-                memory: "512Mi"
             envFrom:
               - configMapRef:
                   name: ${CI_PROJECT_NAME}-config
@@ -32,3 +25,5 @@ spec:
           restartPolicy: Never
           imagePullSecrets:
           - name: gitlab-registry
+          nodeSelector:
+            doks.digitalocean.com/node-pool: shared-dev-pool

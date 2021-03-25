@@ -41,6 +41,8 @@ spec:
             limits:
               cpu: "100m"
               memory: "128Mi"
+      nodeSelector:
+        doks.digitalocean.com/node-pool: shared-dev-pool
 ---
 apiVersion: v1
 kind: Service
@@ -81,7 +83,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: mailhog
+          serviceName: mailhog-$CI_ENVIRONMENT_SLUG
           servicePort: 8025
   tls:
   - hosts:
