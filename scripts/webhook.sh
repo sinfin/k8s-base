@@ -14,8 +14,15 @@ curl --silent -X POST -H 'Content-type: application/json' \
 "{  \"channel\": \"${to}\",
     \"username\": \"${CI_PROJECT_NAME}\",
     \"icon_emoji\": \"${emoji}\",
-    \"text\": \"Gitlab ${CI_PROJECT_NAME} job ${CI_JOB_NAME} by $GITLAB_USER_LOGIN finished\",
+    \"text\": \"Project *${CI_PROJECT_NAME}* run job *${CI_JOB_NAME}* on *${CI_COMMIT_REF_NAME}* by ${GITLAB_USER_LOGIN} finished *$(echo $color | tr '[:lower:]' '[:upper:]')*\",
     \"attachments\": [
-        {\"color\": \"${color}\", \"text\": \"Job ${CI_JOB_NAME} finished with $(echo $color | tr '[:lower:]' '[:upper:]'), link: <${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}>\"}
+        {\"color\": \"${color}\",
+         \"fallback\": \"Job: <${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}|${CI_JOB_ID}>, Commit: <${CI_PROJECT_URL}/-/commit/${CI_COMMIT_SHA}|${CI_COMMIT_SHORT_SHA}>\",
+         \"fields\": [
+            { \"title\":\"Job (${CI_JOB_NAME})\", \"value\": \"<${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}|${CI_JOB_ID}>\" },
+            { \"title\":\"Commit (${CI_COMMIT_REF_NAME})\", \"value\": \"<${CI_PROJECT_URL}/-/commit/${CI_COMMIT_SHA}|${CI_COMMIT_SHORT_SHA}>\" },
+            { \"title\":\"Message\", \"value\": \"${CI_COMMIT_TITLE}\" }
+           ]
+        }
     ]
 }" $SLACK_WEBHOOK > /dev/null || true

@@ -17,11 +17,11 @@ case $stage in
     fi
     ;;
   packages)
-    docker build --pull --build-arg BASE=$BASE_SHA -t ${CI_REGISTRY_IMAGE}/packages:$PACKAGES_SHA -f Dockerfile.packages .
+    docker build --pull --build-arg BASE=$BASE_SHA --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}/packages:$PACKAGES_SHA -f Dockerfile.packages .
     docker push ${CI_REGISTRY_IMAGE}/packages:$PACKAGES_SHA
     ;;
   app)
-    docker build --pull --build-arg BASE=$PACKAGES_SHA -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} -f Dockerfile .
+    docker build --pull --build-arg BASE=$PACKAGES_SHA --build-arg CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} -f Dockerfile .
     docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
     ;;
   *) 
