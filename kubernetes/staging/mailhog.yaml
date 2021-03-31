@@ -83,7 +83,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: mailhog-$CI_ENVIRONMENT_SLUG
+          serviceName: mailhog
           servicePort: 8025
   tls:
   - hosts:
