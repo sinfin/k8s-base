@@ -47,7 +47,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mailhog-$CI_ENVIRONMENT_SLUG
+  name: mailhog
   namespace: $KUBE_NAMESPACE
   labels:
     app: $CI_ENVIRONMENT_SLUG
