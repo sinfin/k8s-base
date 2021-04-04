@@ -1,0 +1,5 @@
+/kubernetes
+/.gitlab-ci.yml
+/.github
+/Dockerfile*
+/docker-compose.yml
