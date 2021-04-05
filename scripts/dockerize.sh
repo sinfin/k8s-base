@@ -12,8 +12,57 @@ cat << EOF >> Gemfile
 gem "sidekiq-monitoring", "1.3.4"
 gem "status-page", "0.1.5"
 EOF
+project=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//' | cut -d/ -f2)
+cat << EOF >> config/database.yml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+development:
+  <<: *default
+  username: <%= ENV['DB_USER'] || 'postgres' %>
+  password: <%= ENV['DB_PASSWORD'] || '' %>
+  host: <%= ENV['DB_HOST'] || 'localhost' %>
+  port: <%= ENV['DB_PORT'] || 5432 %>
+  database: <%= ENV['DB_NAME'] || '${project}_development' %>
+
+test:
+  <<: *default
+  username: <%= ENV['TEST_DB_USER'] || ENV['DB_USER'] || 'postgres' %>
+  password: <%= ENV['DB_PASSWORD'] || ENV['DB_PASSWORD'] || '' %>
+  host: <%= ENV['TEST_DB_HOST'] || ENV['DB_HOST'] || 'localhost' %>
+  port: <%= ENV['TEST_DB_PORT'] || ENV['DB_PORT'] || 5432 %>
+  database: <%= ENV['TEST_DB_NAME'] || ENV['DB_NAME'] || '${project}_test' %>
+
+staging:
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  adapter: postgresql
+  host: <%= ENV['DB_HOST'] %>
+  port: <%= ENV['DB_PORT'] %>
+  database: <%= ENV['DB_NAME'] %>
+  encoding: utf8
+  collation: cs_CZ.UTF8
+  min_messages: warning
+  pool: <%= ENV['DB_POOL'] %>
+  timeout: 3000
+
+production:
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  adapter: postgresql
+  host: <%= ENV['DB_HOST'] %>
+  port: <%= ENV['DB_PORT'] %>
+  database: <%= ENV['DB_NAME'] %>
+  encoding: utf8
+  collation: cs_CZ.UTF8
+  min_messages: warning
+  pool: <%= ENV['DB_POOL'] %>
+  timeout: 3000
+EOF
 git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
-git add scripts Gemfile
+git add scripts Gemfile config/database.yml
 git commit -m "Dockerize application"
 git push -u origin dockerize
 repo=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//')
