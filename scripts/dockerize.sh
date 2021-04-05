@@ -8,6 +8,7 @@ tar xvzf k8s-base.tar.gz && \
 git checkout -b dockerize
 git checkout README.md
 git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
+git add scripts
 git commit -m "Dockerize application"
 git push -u origin dockerize
 repo=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//')

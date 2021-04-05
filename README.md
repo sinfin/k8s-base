@@ -8,7 +8,7 @@
 ## Usage
 
 ```
-curl https://raw.githubusercontent.com/sinfin/k8s-base/master/dockerize.sh | bash -
+curl https://raw.githubusercontent.com/sinfin/k8s-base/master/scripts/dockerize.sh | bash -
 ```
 
 ## How it works?
