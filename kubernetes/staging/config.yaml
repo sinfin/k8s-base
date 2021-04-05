@@ -12,6 +12,7 @@ apiVersion: v1
 data:
   RACK_ENV: 'production'
   RAILS_ENV: 'production'
+  RAILS_LOG_TO_STDOUT: '1'
   PROJECT_NAME: 'change-me'
   SECRET_KEY_BASE: 'change-me'
   DRAGONFLY_SECRET: 'change-me'
