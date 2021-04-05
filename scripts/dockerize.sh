@@ -7,12 +7,15 @@ tar xvzf k8s-base.tar.gz && \
 	rmdir sinfin-k8s-base*
 git checkout -b dockerize
 git checkout README.md
+
 cat << EOF >> Gemfile
 
 gem "sidekiq-monitoring", "1.3.4"
 gem "status-page", "0.1.5"
 EOF
+
 project=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//' | cut -d/ -f2)
+
 cat << EOF > config/database.yml
 default: &default
   adapter: postgresql
@@ -79,8 +82,13 @@ production:
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
   channel_prefix: aukceaukci_production
 EOF
+
+if [ ! -e config/environments/staging.rb ];then
+  cp config/environments/production.rb config/environments/staging.rb
+fi
+
 git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
-git add scripts Gemfile config/database.yml config/cable.yml
+git add scripts Gemfile config/database.yml config/cable.yml config/environments/staging.rb
 git commit -m "Dockerize application"
 git push -u origin dockerize
 repo=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//')
