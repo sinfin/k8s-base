@@ -13,7 +13,7 @@ gem "sidekiq-monitoring", "1.3.4"
 gem "status-page", "0.1.5"
 EOF
 project=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//' | cut -d/ -f2)
-cat << EOF >> config/database.yml
+cat << EOF > config/database.yml
 default: &default
   adapter: postgresql
   encoding: unicode
@@ -61,8 +61,26 @@ production:
   pool: <%= ENV['DB_POOL'] %>
   timeout: 3000
 EOF
+
+cat << EOF > config/cable.yml
+development:
+  adapter: async
+
+test:
+  adapter: test
+
+staging:
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+  channel_prefix: <%= ENV.fetch("REDIS_NAMESPACE") { "default" } %>
+
+production:
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+  channel_prefix: aukceaukci_production
+EOF
 git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
-git add scripts Gemfile config/database.yml
+git add scripts Gemfile config/database.yml config/cable.yml
 git commit -m "Dockerize application"
 git push -u origin dockerize
 repo=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//')
