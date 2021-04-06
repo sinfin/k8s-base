@@ -83,13 +83,64 @@ production:
   channel_prefix: aukceaukci_production
 EOF
 
-if [ ! -e config/environments/staging.rb ];then
+if [ ! -e config/sidekiq.yml ]; then
+cat << EOF > config/sidekiq.yml
+---
+:concurrency: 5
+
+production:
+  :concurrency: 10
+
+:queues:
+  - [ ${project}_critical, 4 ]
+  - [ ${project}_default, 2 ]
+  - [ ${project}_ahoy, 1 ]
+  - [ ${project}_mailers, 1 ]
+  - [ ${project}_slow, 1 ]
+EOF
+fi
+
+if [ ! -e config/initializers/active_job.rb ]; then
+mkdir -p config/initializers/
+cat << EOF > config/initializers/active_job.rb
+# frozen_string_literal: true
+
+if Rails.env.test?
+  Rails.application.config.active_job.queue_adapter = :async
+else
+  if Rails.env.production? || Rails.env.staging? || (ENV["DEV_QUEUE_ADAPTER"] == "sidekiq" && ENV["REDIS_URL"])
+    Rails.application.config.active_job.queue_adapter     = :sidekiq
+    Rails.application.config.active_job.queue_name_prefix = "aukceaukci"
+
+    settings = {
+      url: ENV["REDIS_URL"],
+      namespace: ENV["REDIS_NAMESPACE"]
+    }
+
+    Sidekiq.configure_server do |config|
+      config.redis = settings
+    end
+
+    Sidekiq.configure_client do |config|
+      config.redis = settings
+    end
+  else
+    Rails.application.config.active_job.queue_adapter = :async
+  end
+end
+EOF
+fi
+
+if [ ! -e config/environments/staging.rb ]; then
   cp config/environments/production.rb config/environments/staging.rb
 fi
 
-git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml
-git add scripts Gemfile config/database.yml config/cable.yml config/environments/staging.rb
+git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml \
+    scripts Gemfile config/database.yml config/cable.yml config/environments/staging.rb \
+    config/initializers/active_job.rb config/sidekiq.yml
+
 git commit -m "Dockerize application"
 git push -u origin dockerize
+
 repo=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//')
 open https://github.com/${repo}/pull/new/dockerize
