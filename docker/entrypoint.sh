@@ -5,7 +5,7 @@ PROCESS=${PROCESS:-$1}
 case $PROCESS in
   development)
       cd /app/ && \
-        bundle install && \
+        bundle install --jobs $( nproc ) && \
         bundle exec rake db:migrate && \
         bundle exec rake assets:precompile && \
         mkdir -p /app//log && \

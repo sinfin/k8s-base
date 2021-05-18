@@ -21,6 +21,8 @@ RUN apt-get update && \
     exiftool \
     gifsicle \
     nginx && \
+  sed -i '/pattern="PDF"/s/rights="none"/rights="all"/' /etc/ImageMagick-6/policy.xml && \
+  grep PDF /etc/ImageMagick-6/policy.xml && \
   apt-get autoremove -y && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists

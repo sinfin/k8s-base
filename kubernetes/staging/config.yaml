@@ -20,7 +20,7 @@ data:
   S3_SCHEME: 'https'
   S3_REGION: 'eu-west-1'
   S3_BUCKET_NAME: 'change-me'
-  AWS_ACCESS_KEY_ID: 'change-me' 
+  AWS_ACCESS_KEY_ID: 'change-me'
   AWS_SECRET_ACCESS_KEY: 'change-me'
   SMTP_ADDRESS: 'mailhog'
   SMTP_PORT: '1025'
@@ -38,8 +38,15 @@ data:
   RAVEN_DSN: 'https://secret@change-me.sentry.io/change-me'
   RECAPTCHA_SITE_KEY: 'change-me'
   RECAPTCHA_SECRET_KEY: 'change-me'
-  FACEBOOK_APPLICATION_ID: 'change-me'
-  FACEBOOK_APPLICATION_SECRET: 'change-me'
+  MAILCHIMP_API_KEY: 'change-me'
+  MAILCHIMP_LIST_ID: 'change-me'
+  OMNIAUTH_FACEBOOK_CLIENT_ID: 'change-me'
+  OMNIAUTH_FACEBOOK_CLIENT_SECRET: 'change-me'
+  OMNIAUTH_TWITTER_CLIENT_ID: 'change-me'
+  OMNIAUTH_TWITTER_CLIENT_SECRET: 'change-me'
+  OMNIAUTH_GOOGLE_OAUTH2_CLIENT_ID: 'change-me'
+  OMNIAUTH_GOOGLE_OAUTH2_CLIENT_SECRET: 'change-me'
+
 kind: ConfigMap
 metadata:
   name: ${CI_PROJECT_NAME}-config

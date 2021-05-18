@@ -5,8 +5,8 @@ FROM ${CI_REGISTRY_IMAGE}/base:${BASE}
 WORKDIR /app
 COPY Gemfile Gemfile.lock /app/
 
-RUN gem install puma -v=3.11.4 && \
-    gem install bundler -v=2.1.4 && \
+RUN gem install puma -v=5.3.1 && \
+    gem install bundler -v=2.2.11 && \
     bundle config set without 'development test' && \
     bundle config set deployment 'true' && \
-    bundle install --deployment
+    bundle install --deployment --jobs $( nproc )

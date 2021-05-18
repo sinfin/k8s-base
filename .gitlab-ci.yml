@@ -50,13 +50,13 @@ test:
       - vendor
   script:
     - echo "danger" > $CI_PROJECT_DIR/success
-    - gem install bundler -v=2.1.4
-    - bundle config set without 'development' && bundle config set path 'vendor/ruby' && bundle install
+    - gem install bundler -v=2.2.11
+    - bundle config set without 'development' && bundle config set path 'vendor/ruby' && bundle install --jobs $( nproc )
     - ./scripts/prepare_test.sh
     - RAILS_ENV=test bundle exec rake db:environment:set 2>/dev/null || echo 'Not setting env.'
     - RAILS_ENV=test bundle exec rake db:migrate
     - rm -f log/test.log
-    - PARALLEL_WORKERS=4 bundle exec rails test
+    - PARALLEL_WORKERS=$( nproc ) bundle exec rails test
     - echo "good" > $CI_PROJECT_DIR/success
   stage: test
   interruptible: true
@@ -173,4 +173,3 @@ taglatest:
     - command push
   only:
     - master
-

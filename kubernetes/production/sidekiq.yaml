@@ -41,8 +41,8 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            cpu: "200m"
-            memory: "768Mi"
+            cpu: "1000m"
+            memory: "1024Mi"
           requests:
             memory: "512Mi"
             cpu: "100m"
@@ -55,3 +55,5 @@ spec:
           {{SECRETS}}
       imagePullSecrets:
         - name: gitlab-registry
+      nodeSelector:
+        doks.digitalocean.com/node-pool: shared-prod-pool
