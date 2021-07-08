@@ -10,8 +10,14 @@ git checkout README.md
 
 cat << EOF >> Gemfile
 
+# Sidekiq stuff
+gem "sidekiq", "~> 5"
+gem "sidekiq-cron", "1.2.0"
+gem "redis-namespace", "1.8.1"
+# Monitoring
 gem "sidekiq-monitoring", "1.3.4"
 gem "status-page", "0.1.5"
+gem "rack-mini-profiler"
 EOF
 
 project=$(git remote get-url origin | cut -d: -f2- | sed 's/.git$//' | cut -d/ -f2)
