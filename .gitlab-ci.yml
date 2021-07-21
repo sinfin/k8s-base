@@ -50,7 +50,7 @@ test:
       - vendor
   script:
     - echo "danger" > $CI_PROJECT_DIR/success
-    - gem install bundler -v=2.2.11
+    - gem install bundler -v=2.2.24
     - bundle config set without 'development' && bundle config set path 'vendor/ruby' && bundle install --jobs $( nproc )
     - ./scripts/prepare_test.sh
     - RAILS_ENV=test bundle exec rake db:environment:set 2>/dev/null || echo 'Not setting env.'
