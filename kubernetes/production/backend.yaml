@@ -60,7 +60,7 @@ spec:
           - containerPort: 3000
         resources:
           limits:
-            cpu: "200m"
+            cpu: "500m"
             memory: "512Mi"
           requests:
             memory: "256Mi"
@@ -86,3 +86,5 @@ spec:
           {{SECRETS}}
       imagePullSecrets:
         - name: gitlab-registry
+      nodeSelector:
+        doks.digitalocean.com/node-pool: shared-prod-pool

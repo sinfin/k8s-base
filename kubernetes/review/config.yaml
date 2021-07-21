@@ -1,7 +1,7 @@
 ---
 apiVersion: v1
 data:
-  auth: change-me-base64
+  auth: c2luZmluOiRhcHIxJDQ1bjlldHR5JHJTNkZ3OVpvcWtTT2M0Sm5JYUh5Zy4K
 kind: Secret
 metadata:
   name: basic-auth

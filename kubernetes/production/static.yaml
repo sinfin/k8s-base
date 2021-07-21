@@ -32,7 +32,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: RollingUpdate
   selector:
     matchLabels:
       app: $CI_ENVIRONMENT_SLUG
@@ -84,3 +84,5 @@ spec:
           {{SECRETS}}
       imagePullSecrets:
         - name: gitlab-registry
+      nodeSelector:
+        doks.digitalocean.com/node-pool: shared-prod-pool
