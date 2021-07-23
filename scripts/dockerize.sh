@@ -69,6 +69,8 @@ production:
   min_messages: warning
   pool: <%= ENV['DB_POOL'] %>
   timeout: 3000
+  prepared_statements: false
+  advisory_locks: false
 EOF
 
 cat << EOF > config/cable.yml
@@ -86,7 +88,13 @@ staging:
 production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: aukceaukci_production
+  channel_prefix: ${project}_production
+EOF
+
+cat << EOF >> config/initializers/assets.rb
+Rails.application.config.assets.configure do |env|
+  env.export_concurrent = false
+end
 EOF
 
 if [ ! -e config/sidekiq.yml ]; then
@@ -116,7 +124,7 @@ if Rails.env.test?
 else
   if Rails.env.production? || Rails.env.staging? || (ENV["DEV_QUEUE_ADAPTER"] == "sidekiq" && ENV["REDIS_URL"])
     Rails.application.config.active_job.queue_adapter     = :sidekiq
-    Rails.application.config.active_job.queue_name_prefix = "aukceaukci"
+    Rails.application.config.active_job.queue_name_prefix = "${project}"
 
     settings = {
       url: ENV["REDIS_URL"],

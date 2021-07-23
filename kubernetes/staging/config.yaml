@@ -28,6 +28,7 @@ data:
   SMTP_USERNAME: 'change-me'
   SMTP_PASSWORD: 'change-me'
   REDIS_URL: 'redis://redis:6379/0'
+  REDIS_CACHE_URL: 'redis://redis:6379/1'
   REDIS_NAMESPACE: 'change-me'
   DB_HOST: '10.133.161.104'
   DB_NAME: '${CI_PROJECT_NAME}_stage'
