@@ -39,7 +39,7 @@ development:
 test:
   <<: *default
   username: <%= ENV['TEST_DB_USER'] || ENV['DB_USER'] || 'postgres' %>
-  password: <%= ENV['DB_PASSWORD'] || ENV['DB_PASSWORD'] || '' %>
+  password: <%= ENV['TEST_DB_PASSWORD'] || ENV['DB_PASSWORD'] || '' %>
   host: <%= ENV['TEST_DB_HOST'] || ENV['DB_HOST'] || 'localhost' %>
   port: <%= ENV['TEST_DB_PORT'] || ENV['DB_PORT'] || 5432 %>
   database: <%= ENV['TEST_DB_NAME'] || ENV['DB_NAME'] || '${project}_test' %>
