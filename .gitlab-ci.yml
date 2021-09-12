@@ -95,6 +95,8 @@ docker_build:
 review:
   stage: review
   dependencies: []
+  variables:
+    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
   script:
     - command deploy
   environment:
@@ -127,6 +129,8 @@ stop_review:
 staging:
   stage: staging
   dependencies: []
+  variables:
+    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
   script:
     - command deploy
   environment:
@@ -155,6 +159,8 @@ stop_staging:
 production:
   stage: production
   dependencies: []
+  variables:
+    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
   script:
     - command deploy
   environment:
