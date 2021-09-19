@@ -1,5 +1,5 @@
 ---
-environment: review
+environment: production
 
 dockerRegistrySecret:
   create: true
@@ -38,16 +38,7 @@ services:
         memory: 32Mi
 
   mailhog:
-    enabled: true
-    basicAuth:
-      enabled: true
-      user: mailhog
-      password: password
-    host: mail
-    appendBaseDomain: true
-    appendBaseDomainSign: "-"
-    tls: true
-    secretName: change-me
+    enabled: false
 
   postgresql:
     enabled: false
@@ -104,10 +95,15 @@ ingress:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: 512m
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m"
+    nginx.org/proxy-connect-timeout: "300s"
+    nginx.org/proxy-send-timeout: "300s"
+    nginx.org/proxy-read-timeout: "300s"
+    nginx.org/client-max-body-size: "512m"
   hosts:
-    - host: ""
-      appendBaseDomain: true
+    - host: "change-me"
+      appendBaseDomain: false
       appendBaseDomainSign: ""
       paths:
         - path: /
@@ -132,18 +128,30 @@ ingress:
             servicePort: 80
   tls:
     hosts:
-      - host: ""
-        appendBaseDomain: true
+      - host: "change-me"
+        appendBaseDomain: false
         appendBaseDomainSign: ""
         secretName: main-change-me-cert
 
 autoscaling:
   backend:
-    enabled: false
+    enabled: true
+    targetCPUUtilizationPercentage: 90
+    targetMemoryUtilizationPercentage: 90
+    minReplicas: 1
+    maxReplicas: 5
   sidekiq:
-    enabled: false
+    enabled: true
+    targetCPUUtilizationPercentage: 90
+    targetMemoryUtilizationPercentage: 90
+    minReplicas: 1
+    maxReplicas: 5
   static:
-    enabled: false
+    enabled: true
+    targetCPUUtilizationPercentage: 90
+    targetMemoryUtilizationPercentage: 90
+    minReplicas: 1
+    maxReplicas: 5
 
 nodeSelector: {}
 tolerations: []
