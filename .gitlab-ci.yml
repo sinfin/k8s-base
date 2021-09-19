@@ -95,13 +95,30 @@ docker_build:
 review:
   stage: review
   dependencies: []
-  variables:
-    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
+  image:
+    name: alpine/k8s:1.20.4
+    entrypoint: [""]
   script:
-    - command deploy
+    - echo KUBE_NAMESPACE - $KUBE_NAMESPACE
+    - helm repo add sinfin https://sinfin1.gitlab.io/infra/helm
+    - |
+      helm upgrade --install --wait --atomic --timeout 10m \
+      --create-namespace \
+      --values k8s/values-review.yaml \
+      --set image.repository=$CI_REGISTRY_IMAGE \
+      --set image.tag=$CI_COMMIT_SHA \
+      --set dockerRegistrySecret.registry="$CI_REGISTRY" \
+      --set dockerRegistrySecret.username="$CI_DEPLOY_USER" \
+      --set dockerRegistrySecret.password="$CI_DEPLOY_PASSWORD" \
+      --set gitlab.app=$CI_PROJECT_PATH_SLUG \
+      --set gitlab.env=$CI_ENVIRONMENT_SLUG \
+      --set baseDomain=$KUBE_NAMESPACE.$KUBE_DOMAIN \
+      --set commitHash=$CI_COMMIT_SHORT_SHA \
+      --namespace=$KUBE_NAMESPACE \
+      $KUBE_NAMESPACE sinfin/app
   environment:
     name: review/$CI_COMMIT_REF_NAME
-    url: http://$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
+    url: https://$KUBE_NAMESPACE.$KUBE_DOMAIN
     on_stop: stop_review
   when: manual
   only:
@@ -112,10 +129,13 @@ review:
 stop_review:
   stage: review
   dependencies: []
+  image:
+    name: alpine/k8s:1.20.4
+    entrypoint: [""]
   variables:
     GIT_STRATEGY: none
   script:
-    - command destroy
+    - helm uninstall $KUBE_NAMESPACE -n $KUBE_NAMESPACE
     - kubectl delete namespace "$KUBE_NAMESPACE"
   environment:
     name: review/$CI_COMMIT_REF_NAME
@@ -126,17 +146,33 @@ stop_review:
   except:
     - master
 
-staging:
+staging:helm:
   stage: staging
   dependencies: []
-  variables:
-    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
+  image:
+    name: alpine/k8s:1.20.4
+    entrypoint: [""]
   script:
-    - command deploy
+    - echo KUBE_NAMESPACE - $KUBE_NAMESPACE
+    - helm repo add sinfin https://sinfin1.gitlab.io/infra/helm
+    - |
+      helm upgrade --install --wait --atomic --timeout 10m \
+      --create-namespace \
+      --values k8s/values-staging.yaml \
+      --set image.repository=$CI_REGISTRY_IMAGE \
+      --set image.tag=$CI_COMMIT_SHA \
+      --set dockerRegistrySecret.registry="$CI_REGISTRY" \
+      --set dockerRegistrySecret.username="$CI_DEPLOY_USER" \
+      --set dockerRegistrySecret.password="$CI_DEPLOY_PASSWORD" \
+      --set gitlab.app=$CI_PROJECT_PATH_SLUG \
+      --set gitlab.env=$CI_ENVIRONMENT_SLUG \
+      --set baseDomain=$CI_PROJECT_NAME-stage.$KUBE_DOMAIN \
+      --namespace=$KUBE_NAMESPACE \
+      $KUBE_NAMESPACE sinfin/app
   environment:
     name: staging
     url: http://$CI_PROJECT_NAME-stage.$KUBE_DOMAIN
-    on_stop: stop_staging
+    action: prepare
   when: manual
   only:
     - master
@@ -144,10 +180,13 @@ staging:
 stop_staging:
   stage: staging
   dependencies: []
+  image:
+    name: alpine/k8s:1.20.4
+    entrypoint: [""]
   variables:
     GIT_STRATEGY: none
   script:
-    - command destroy
+    - helm uninstall $KUBE_NAMESPACE -n $KUBE_NAMESPACE
     - kubectl delete namespace "$KUBE_NAMESPACE"
   environment:
     name: staging
@@ -159,15 +198,30 @@ stop_staging:
 production:
   stage: production
   dependencies: []
-  variables:
-    SECRET_CURRENT_RELEASE_COMMIT_HASH: $CI_COMMIT_SHORT_SHA
+  image:
+    name: alpine/k8s:1.20.4
+    entrypoint: [""]
   script:
-    - command deploy
+    - echo KUBE_NAMESPACE - $KUBE_NAMESPACE
+    - helm repo add sinfin https://sinfin1.gitlab.io/infra/helm
+    - |
+      helm upgrade --install --wait --atomic --timeout 10m \
+      --create-namespace \
+      --values k8s/values-prod.yaml \
+      --set image.repository=$CI_REGISTRY_IMAGE \
+      --set image.tag=$CI_COMMIT_SHA \
+      --set dockerRegistrySecret.registry="$CI_REGISTRY" \
+      --set dockerRegistrySecret.username="$CI_DEPLOY_USER" \
+      --set dockerRegistrySecret.password="$CI_DEPLOY_PASSWORD" \
+      --set gitlab.app=$CI_PROJECT_PATH_SLUG \
+      --set gitlab.env=$CI_ENVIRONMENT_SLUG \
+      --namespace=$KUBE_NAMESPACE \
+      $KUBE_NAMESPACE sinfin/app
   environment:
-    name: production
+    name: staging
     url: http://$CI_PROJECT_NAME-prod.$KUBE_DOMAIN
+    action: prepare
   when: manual
-  allow_failure: false
   only:
     - master
 

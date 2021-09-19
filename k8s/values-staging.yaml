@@ -1,0 +1,150 @@
+---
+environment: staging
+
+dockerRegistrySecret:
+  create: true
+  name: registry-gitlab
+
+services:
+  backend:
+    enabled: true
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+  sidekiq:
+    enabled: true
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+
+  static:
+    enabled: true
+    healtz: /healthz
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi
+
+  mailhog:
+    enabled: true
+    basicAuth:
+      enabled: true
+      user: mailhog
+      password: password
+    host: mail
+    appendBaseDomain: true
+    appendBaseDomainSign: "-"
+    tls: true
+    secretName: change-me
+
+  postgresql:
+    enabled: false
+
+  redis:
+    enabled: true
+
+vault:
+  enabled: true
+  authPath: auth/kubernetes-change-me
+  role: change-me
+  secrets:
+    - name: dotenv
+      path: k8s/apps/kv/change-me/staging/dotenv
+      type: key-value
+
+    - name: google-cloud-api
+      path: k8s/apps/kv/change-me/staging/google_cloud_api
+      type: value
+      key: google_cloud_api
+
+image:
+  repository: ""
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets:
+  - name: registry-gitlab
+nameOverride: ""
+fullnameOverride: "change-me"
+
+gitlab:
+  enabled: true
+  env: dev
+  app: change-me
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "change-me"
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 512m
+  hosts:
+    - host: ""
+      appendBaseDomain: true
+      appendBaseDomainSign: ""
+      paths:
+        - path: /
+          backend:
+            serviceName: backend
+            servicePort: 80
+        - path: /assets
+          backend:
+            serviceName: static
+            servicePort: 80
+        - path: /images
+          backend:
+            serviceName: static
+            servicePort: 80
+        - path: /fonts
+          backend:
+            serviceName: static
+            servicePort: 80
+        - path: /(android-chrome-192x192.png|android-chrome-512x512.png|apple-touch-icon.png|apple-touch-icon-precomposed.png|browserconfig.xml|favicon-16x16.png|favicon-32x32.png|favicon.ico|fb-share.png|fb-share.jpg|mstile-150x150.png|safari-pinned-tab.svg|site.webmanifest)
+          backend:
+            serviceName: static
+            servicePort: 80
+  tls:
+    hosts:
+      - host: ""
+        appendBaseDomain: true
+        appendBaseDomainSign: ""
+        secretName: main-change-me-cert
+
+autoscaling:
+  backend:
+    enabled: false
+  sidekiq:
+    enabled: false
+  static:
+    enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

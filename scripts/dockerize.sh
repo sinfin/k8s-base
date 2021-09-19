@@ -149,7 +149,7 @@ if [ ! -e config/environments/staging.rb ]; then
   cp config/environments/production.rb config/environments/staging.rb
 fi
 
-git add kubernetes docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml \
+git add k8s docker Dockerfile* prepare_test.sh docker-compose.yml .gitlab-ci.yml \
     scripts Gemfile config/database.yml config/cable.yml config/environments/staging.rb \
     config/initializers/active_job.rb config/sidekiq.yml
 
